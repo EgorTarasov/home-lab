@@ -1,21 +1,42 @@
 # Home-lab
 
-This repository represents my home-lab setup, which can we recreated using provided configurations and scripts.
+This repository represents my home-lab setup, which can be recreated using provided configurations and scripts.
 It includes various services and applications that I run at home, such as:
-- **Pi-hole**: dns resolver for local network
-- **Cloudflare** for DNS records
-- **WireGuard**: VPN server for secure remote access
-- **k3s**: for managing multiple nodes cluster
-- **prometheus**: for monitoring and alerting
-- **Grafana**: for visualizing metrics and logs
+- **k3s**: Lightweight Kubernetes cluster for container orchestration
+- **cert-manager**: Automated SSL certificate management with Let's Encrypt and Cloudflare DNS
+- **Rancher**: Kubernetes management UI
+- **Cloudflare**: DNS management and SSL certificate validation
+- **Pi-hole**: DNS resolver for local network (planned)
+- **WireGuard**: VPN server for secure remote access (planned)
+- **Monitoring stack**: Prometheus and Grafana (planned)
 
-## Setup
-Currently setup consists of four nodes:
-- **Node 1**: Server running existing coolify services
-- **Node 2**: server running pi hole
-- **Node 3**: master node for k3s cluster
-- **Node 4**: worker node for k3s cluster
-- **Node 5**: worker node for k3s cluster with gpu
+## Current Setup
+The setup currently consists of:
+- **home-lab-node-1** (192.168.1.51): K3s master/control-plane node
+  - Role: control-plane, master
+  - CPU: 16 cores
+  - Network: Flannel CNI with VXLAN backend
+  - Services: K3s server, cert-manager, Rancher
+
+## Services & Components
+
+### 🔐 SSL Certificate Management
+- **cert-manager**: Automated SSL certificates using Let's Encrypt
+- **DNS-01 Challenge**: Using Cloudflare API for domain validation
+- **Domain**: `*.k3s.larek.tech` with wildcard certificates
+- **ClusterIssuer**: `cloudflare-clusterissuer` for automatic certificate provisioning
+
+### 🎛️ Cluster Management
+- **Rancher UI**: Web-based Kubernetes management interface
+  - URL: `https://rancher.k3s.larek.tech`
+  - SSL: Automated certificate from cert-manager
+  - Bootstrap password: admin
+
+### 🌐 Networking
+- **Internal Network**: 192.168.1.0/24
+- **Pod CIDR**: 10.42.0.0/24
+- **External Domain**: `larek.tech` managed by Cloudflare
+- **K3s Subdomain**: `*.k3s.larek.tech` for cluster services
 
 ## Security & Secrets Management
 
@@ -38,34 +59,139 @@ Currently setup consists of four nodes:
 - Use Kubernetes Secrets for runtime configuration
 - Consider External Secrets Operator for production
 
-## Repository structure
+
+## Repository Structure
 ```
+├── clusters/
+│   ├── kubeconfig.yaml         # K3s cluster configuration (gitignored)
+│   └── .gitignore
 ├── k3s/
 │   ├── cluster-config/
-│   ├── ingress/
-│   └── monitoring/
-├── ansible/                 # Node configuration
+│   │   ├── cert-manager/
+│   │   │   ├── clusterissuer.yaml        # Cloudflare ClusterIssuer for Let's Encrypt
+│   │   │   └── secret-cloudflare.yaml    # Cloudflare API token secret
+│   │   └── rancher/
+│   │       ├── certificate.yaml          # SSL certificate for Rancher UI
+│   │       └── ui.sh                     # Rancher installation script
+│   ├── ingress/                          # Ingress configurations (planned)
+│   └── monitoring/                       # Monitoring stack (planned)
 ├── configs/
-│   ├── .env.example        # Template files
-│   ├── wireguard/
-│   └── pihole/
-└── scripts/                # Setup scripts
+│   ├── network.md                        # Network configuration documentation
+│   ├── pi-hole/                          # Pi-hole configurations (planned)
+│   └── wireguard/                        # WireGuard VPN configurations (planned)
+├── scripts/
+│   ├── master.sh                         # K3s master node setup script
+│   └── worker.sh                         # K3s worker node setup script
+└── readme.md
 ```
 
-## Roadmap
-- [ ] Setup network for all nodes
-    - [ ] add each mac address to dhcp server
-    - [ ] setup static ip for each node
-    - [ ] setup Pi-hole for DNS resolution
-    - [ ] setup WireGuard VPN server
-- [ ] Setup k3s cluster
-    - [ ] install k3s on master node
-    - [ ] join worker nodes to the cluster
-    - [ ] setup traefik ingress controller
-    - [ ] setup github actions runner
-    - [ ] setup ssl certificates for local network using cert-manager and dns-01 challenge
-    - [ ] Setup monitoring and alerting
-        - [ ] Setup prometheus and grafana
-- [ ] Infrastructure as code
-    - [ ] Setup ansible for configuration management
-    - [ ] Setup argocd for GitOps deployment of applications
+## Quick Start
+
+### 1. K3s Cluster Setup
+```bash
+# On master node
+./scripts/master.sh
+
+# On worker nodes (set environment variables first)
+export K3S_URL="https://192.168.1.51:6443"
+export K3S_TOKEN="<node-token-from-master>"
+./scripts/worker.sh
+```
+
+### 2. Cert-manager Installation
+```bash
+# Add Jetstack repository
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+# Install cert-manager
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.18.2 \
+  --set crds.enabled=true
+
+# Apply Cloudflare secret (update with your API token)
+kubectl apply -f k3s/cluster-config/cert-manager/secret-cloudflare.yaml
+
+# Apply ClusterIssuer
+kubectl apply -f k3s/cluster-config/cert-manager/clusterissuer.yaml
+```
+
+### 3. Rancher UI Installation
+```bash
+# Create namespace
+kubectl create namespace cattle-system
+
+# Apply SSL certificate
+kubectl apply -f k3s/cluster-config/rancher/certificate.yaml
+
+# Install Rancher
+chmod +x k3s/cluster-config/rancher/ui.sh
+./k3s/cluster-config/rancher/ui.sh
+```
+
+## DNS Configuration
+Configure the following DNS records in Cloudflare:
+```
+Type: A
+Name: *.k3s.larek.tech
+Content: <your-external-ip>
+Proxy: DNS only
+```
+
+## Progress Tracking
+### ✅ Completed
+- [x] K3s cluster setup with single master node
+- [x] Helm package manager installation
+- [x] cert-manager installation and configuration
+- [x] Cloudflare DNS-01 challenge integration
+- [x] SSL certificate automation for `*.k3s.larek.tech`
+- [x] Rancher UI deployment with SSL certificates
+
+### 🚧 In Progress
+- [ ] Worker node integration
+- [ ] Ingress controller configuration
+- [ ] Service mesh setup
+
+### 📋 Planned
+- [ ] Network Infrastructure
+  - [ ] Add each MAC address to DHCP server
+  - [ ] Setup static IP for additional nodes
+  - [ ] Setup Pi-hole for DNS resolution
+  - [ ] Setup WireGuard VPN server
+- [ ] Monitoring and Observability
+  - [ ] Setup Prometheus for metrics collection
+  - [ ] Setup Grafana for visualization
+  - [ ] Setup AlertManager for notifications
+- [ ] GitOps and Automation
+  - [ ] Setup FluxCD for GitOps deployment
+  - [ ] Setup GitHub Actions runners
+  - [ ] Infrastructure as Code with Ansible
+- [ ] Additional Services
+  - [ ] Application deployment pipelines
+  - [ ] Backup and disaster recovery
+  - [ ] Network policies and security hardening
+
+## Troubleshooting
+
+### Common Issues
+1. **Certificate not issuing**: Check DNS propagation with `dig TXT _acme-challenge.rancher.k3s.larek.tech`
+2. **Rancher UI not accessible**: Verify certificate status with `kubectl get certificate -n cattle-system`
+3. **DNS resolution issues**: Ensure `*.k3s.larek.tech` points to your external IP
+
+### Useful Commands
+```bash
+# Check cluster status
+kubectl get nodes -o wide
+
+# Check cert-manager status
+kubectl get clusterissuer
+kubectl get certificate -A
+
+# Check Rancher deployment
+kubectl get pods -n cattle-system
+
+# View cert-manager logs
+kubectl logs -n cert-manager deployment/cert-manager -f
+```

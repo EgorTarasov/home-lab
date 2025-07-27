@@ -1,0 +1,17 @@
+# Environment files with real secrets
+.env
+*.env
+!*.env.example
+
+# Kubernetes secrets (keep templates only)
+**/secrets/*.yaml
+!**/secrets/*.example.yaml
+
+# Local development files
+.DS_Store
+*.local
+
+# Backup files
+*.bak
+*.backup
+*~
