@@ -12,7 +12,7 @@ spec:
         spec:
           containers:
           - name: itmo-ratings-cronjob
-            image: ghcr.io/egortarasov/itmo-ratings:sha-ddc9125
+            image: ghcr.io/egortarasov/itmo-ratings:sha-d147305
             command: ["rating-scrapper"]
             env:
             - name: TELEGRAM_API_TOKEN

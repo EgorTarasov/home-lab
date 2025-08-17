@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: itmo-ratings-server
-        image: ghcr.io/egortarasov/itmo-ratings:sha-ddc9125
+        image: ghcr.io/egortarasov/itmo-ratings:sha-d147305
         resources:
           requests:
             memory: "128Mi"
