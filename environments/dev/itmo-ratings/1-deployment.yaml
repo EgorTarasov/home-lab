@@ -1,0 +1,27 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itmo-ratings-server
+  namespace: itmo-ratings
+spec:
+  selector:
+    matchLabels:
+      app: itmo-ratings-server
+  template:
+    metadata:
+      labels:
+        app: itmo-ratings-server
+    spec:
+      containers:
+      - name: itmo-ratings-server
+        image: ghcr.io/egortarasov/itmo-ratings:sha-ddc9125
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 8080
