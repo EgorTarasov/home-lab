@@ -1,0 +1,47 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: itmo-ratings-cronjob
+  namespace: itmo-ratings
+spec:
+  schedule: "*/5 9-22 * * *"  # Run every hour from 9 AM to 10 PM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: itmo-ratings-cronjob
+            image: ghcr.io/egortarasov/itmo-ratings:sha-ddc9125
+            command: ["rating-scrapper"]
+            env:
+            - name: TELEGRAM_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: itmo-ratings-secrets
+                  key: telegram-api-token
+            - name: PROGRAM_ID
+              valueFrom:
+                secretKeyRef:
+                  name: itmo-ratings-secrets
+                  key: program-id
+            - name: STUDENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: itmo-ratings-secrets
+                  key: student-id
+            - name: TELEGRAM_USER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: itmo-ratings-secrets
+                  key: telegram-user-id
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "500m"
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
