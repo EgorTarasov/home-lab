@@ -5,7 +5,7 @@ metadata:
   name: itmo-ratings-cronjob
   namespace: itmo-ratings
 spec:
-  schedule: "*/5 9-22 * * *"  # Run every hour from 9 AM to 10 PM
+  schedule: "* 9-22 * * *"  # Run every hour from 9 AM to 10 PM
   jobTemplate:
     spec:
       template:
