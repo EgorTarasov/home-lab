@@ -1,0 +1,31 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: itmo-ratings-ingress
+  namespace: itmo-ratings
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: itmo-ratings-stripprefix@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: dev.k3s.larek.tech
+    http:
+      paths:
+      - path: /itmo-ratings
+        pathType: Prefix
+        backend:
+          service:
+            name: itmo-ratings-service
+            port:
+              number: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: stripprefix
+  namespace: itmo-ratings
+spec:
+  stripPrefix:
+    prefixes:
+      - /itmo-ratings
