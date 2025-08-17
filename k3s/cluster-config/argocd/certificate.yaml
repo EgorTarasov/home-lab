@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tls-argocd-ingress
+  namespace: argocd
+spec:
+  secretName: tls-argocd-ingress
+  issuerRef:
+    name: cloudflare-clusterissuer
+    kind: ClusterIssuer
+  commonName: argocd.k3s.larek.tech
+  dnsNames:
+  - argocd.k3s.larek.tech

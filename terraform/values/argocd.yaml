@@ -1,0 +1,19 @@
+---
+global:
+  image:
+    tag: "v3.1.0"
+
+server:
+  # Disable ArgoCD's built-in TLS since Traefik handles it
+  insecure: true
+  ingress:
+    enabled: false
+
+  grpc:
+    web: true
+
+  config:
+    url: "https://argocd.k3s.larek.tech"
+
+  extraArgs:
+    - --insecure

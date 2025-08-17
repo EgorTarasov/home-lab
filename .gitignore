@@ -10,6 +10,8 @@
 # Local development files
 .DS_Store
 *.local
+.vscode/
+.idea/
 
 # Backup files
 *.bak
