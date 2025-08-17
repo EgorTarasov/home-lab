@@ -1,197 +1,182 @@
-# Home-lab
+# Домашняя лаборатория
 
-This repository represents my home-lab setup, which can be recreated using provided configurations and scripts.
-It includes various services and applications that I run at home, such as:
-- **k3s**: Lightweight Kubernetes cluster for container orchestration
-- **cert-manager**: Automated SSL certificate management with Let's Encrypt and Cloudflare DNS
-- **Rancher**: Kubernetes management UI
-- **Cloudflare**: DNS management and SSL certificate validation
-- **Pi-hole**: DNS resolver for local network (planned)
-- **WireGuard**: VPN server for secure remote access (planned)
-- **Monitoring stack**: Prometheus and Grafana (planned)
+Этот репозиторий содержит настройки моей домашней лаборатории, которые можно воспроизвести с помощью предоставленных конфигураций и скриптов.
+Включает следующие сервисы и приложения:
+- **k3s**: Легковесный Kubernetes-кластер
+- **cert-manager**: Автоматическое управление SSL-сертификатами через Let's Encrypt и Cloudflare DNS
+- **Rancher**: Веб-интерфейс для управления Kubernetes
+- **Cloudflare**: Управление DNS и проверка SSL-сертификатов
+- **Pi-hole**: DNS-резолвер для локальной сети (планируется)
+- **WireGuard**: VPN-сервер для безопасного удаленного доступа (планируется)
+- **Стек мониторинга**: Prometheus и Grafana (планируется)
+- **Terraform**: Код инфраструктуры для развертывания Argo CD и настройки провайдеров
 
-## Current Setup
-The setup currently consists of:
-- **home-lab-node-1** (192.168.1.51): K3s master/control-plane node
-  - Role: control-plane, master
-  - CPU: 16 cores
-  - Network: Flannel CNI with VXLAN backend
-  - Services: K3s server, cert-manager, Rancher
+## Текущая конфигурация
+- **home-lab-node-1** (192.168.1.51) — узел управления k3s
+  - Роль: control-plane
+  - CPU: 16 ядер
+  - Сеть: Flannel CNI (VXLAN)
+  - Сервисы: k3s server, cert-manager, Rancher
 
-## Services & Components
+## Конфигурация Terraform
+Конфигурационные файлы находятся в каталоге `terraform/`:
+- `0-provider.tf` — настройка провайдеров Terraform (Cloudflare, Kubernetes и т.д.)
+- `1-argocd.tf` — развертывание Argo CD в k3s-кластере
 
-### 🔐 SSL Certificate Management
-- **cert-manager**: Automated SSL certificates using Let's Encrypt
-- **DNS-01 Challenge**: Using Cloudflare API for domain validation
-- **Domain**: `*.k3s.larek.tech` with wildcard certificates
-- **ClusterIssuer**: `cloudflare-clusterissuer` for automatic certificate provisioning
-
-### 🎛️ Cluster Management
-- **Rancher UI**: Web-based Kubernetes management interface
-  - URL: `https://rancher.k3s.larek.tech`
-  - SSL: Automated certificate from cert-manager
-  - Bootstrap password: admin
-
-### 🌐 Networking
-- **Internal Network**: 192.168.1.0/24
-- **Pod CIDR**: 10.42.0.0/24
-- **External Domain**: `larek.tech` managed by Cloudflare
-- **K3s Subdomain**: `*.k3s.larek.tech` for cluster services
-
-## Security & Secrets Management
-
-### What's Safe to Commit:
-- ✅ Local IP addresses (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
-- ✅ Internal DNS names and network topology
-- ✅ Configuration templates (.env.example files)
-- ✅ Port numbers for internal services
-
-### What Should NEVER be Committed:
-- ❌ API tokens and keys (Cloudflare, GitHub, etc.)
-- ❌ Public IP addresses
-- ❌ Passwords and authentication credentials
-- ❌ SSL certificates and private keys
-- ❌ MAC addresses (can be used for tracking)
-
-### Secret Management:
-- Use `.env.example` files as templates
-- Store real secrets in GitHub Secrets for CI/CD
-- Use Kubernetes Secrets for runtime configuration
-- Consider External Secrets Operator for production
-
-
-## Repository Structure
+Применение конфигурации:
+```bash
+cd terraform
+terraform init
+terraform apply
 ```
-├── clusters/
-│   ├── kubeconfig.yaml         # K3s cluster configuration (gitignored)
+
+## Службы и компоненты
+
+### 🔐 Управление SSL-сертификатами
+- **cert-manager**: автоматическое получение сертификатов Let's Encrypt
+- **DNS-01 Challenge**: проверка через Cloudflare API
+- **Домены**: `*.k3s.larek.tech`
+- **ClusterIssuer**: `cloudflare-clusterissuer`
+
+### 🎛️ Управление кластером
+- **Rancher UI**: веб-интерфейс Kubernetes
+  - URL: `https://rancher.k3s.larek.tech`
+  - SSL: из cert-manager
+  - Пароль по умолчанию: admin
+
+### 🌐 Сеть
+- **Внутренняя сеть**: 192.168.1.0/24
+- **Pod CIDR**: 10.42.0.0/24
+- **Внешний домен**: `larek.tech` управляется Cloudflare
+- **Поддомен K3s**: `*.k3s.larek.tech` для сервисов кластера
+
+## Управление безопасностью и секретами
+
+### Что безопасно коммитить:
+- ✅ Локальные IP-адреса (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+- ✅ Внутренние DNS-имена и топология сети
+- ✅ Шаблоны конфигураций (.env.example файлы)
+- ✅ Номера портов для внутренних сервисов
+
+### Что НИКОГДА не следует коммитить:
+- ❌ API токены и ключи (Cloudflare, GitHub и т.д.)
+- ❌ Публичные IP-адреса
+- ❌ Пароли и учетные данные аутентификации
+- ❌ SSL-сертификаты и закрытые ключи
+- ❌ MAC-адреса (могут использоваться для отслеживания)
+
+### Управление секретами:
+- Используйте `.env.example` файлы в качестве шаблонов
+- Храните реальные секреты в GitHub Secrets для CI/CD
+- Используйте Kubernetes Secrets для конфигурации во время выполнения
+- Рассмотрите возможность использования External Secrets Operator для продакшена
+
+
+## Структура репозитория
+```
+├── clusters/                         # Конфигурации кластера k3s (gitignored)
+│   ├── kubeconfig.yaml         # Конфигурация кластера K3s (gitignored)
 │   └── .gitignore
-├── k3s/
+├── configs/                          # Документация и шаблоны конфигураций
+│   ├── network.md                        # Документация по сетевой конфигурации
+│   ├── pi-hole/                          # Конфигурации Pi-hole (планируется)
+│   └── wireguard/                        # Конфигурации WireGuard VPN (планируется)
+├── environments/                     # Конфигурации окружений (dev, prod)
+│   ├── dev/                               # Конфигурации для разработки
+│   └── production/                         # Конфигурации для продакшена
+├── k3s/                              # Скрипты и манифесты для k3s
 │   ├── cluster-config/
 │   │   ├── cert-manager/
-│   │   │   ├── clusterissuer.yaml        # Cloudflare ClusterIssuer for Let's Encrypt
-│   │   │   └── secret-cloudflare.yaml    # Cloudflare API token secret
+│   │   │   ├── clusterissuer.yaml        # Cloudflare ClusterIssuer для Let's Encrypt
+│   │   │   └── secret-cloudflare.yaml    # Секрет с токеном Cloudflare
 │   │   └── rancher/
-│   │       ├── certificate.yaml          # SSL certificate for Rancher UI
-│   │       └── ui.sh                     # Rancher installation script
-│   ├── ingress/                          # Ingress configurations (planned)
-│   └── monitoring/                       # Monitoring stack (planned)
-├── configs/
-│   ├── network.md                        # Network configuration documentation
-│   ├── pi-hole/                          # Pi-hole configurations (planned)
-│   └── wireguard/                        # WireGuard VPN configurations (planned)
-├── scripts/
-│   ├── master.sh                         # K3s master node setup script
-│   └── worker.sh                         # K3s worker node setup script
-└── readme.md
+│   │       ├── certificate.yaml          # SSL-сертификат для Rancher UI
+│   │       └── ui.sh                     # Скрипт установки Rancher
+│   ├── ingress/                          # Конфигурации Ingress (планируется)
+│   └── monitoring/                       # Стек мониторинга (планируется)
+├── scripts/                          # Скрипты установки узлов
+│   ├── master.sh                         # Скрипт настройки главного узла K3s
+│   └── worker.sh                         # Скрипт настройки рабочего узла K3s
+├── terraform/                        # Конфигурация Terraform
+│   ├── 0-provider.tf
+│   └── 1-argocd.tf
+└── readme.md                         # Этот файл
 ```
 
-## Quick Start
+## Быстрый старт
 
-### 1. K3s Cluster Setup
+### 1. Настройка кластера k3s
 ```bash
-# On master node
+# На главном узле
 ./scripts/master.sh
 
-# On worker nodes (set environment variables first)
+# На рабочих узлах (сначала установите переменные окружения)
 export K3S_URL="https://192.168.1.51:6443"
-export K3S_TOKEN="<node-token-from-master>"
+export K3S_TOKEN="<токен-узла-с-главного>"
 ./scripts/worker.sh
 ```
 
-### 2. Cert-manager Installation
+### 2. Установка cert-manager
 ```bash
-# Add Jetstack repository
+# Добавить репозиторий Jetstack
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
 
-# Install cert-manager
+# Установить cert-manager
 helm install cert-manager jetstack/cert-manager \
   --namespace cert-manager \
   --create-namespace \
   --version v1.18.2 \
   --set crds.enabled=true
 
-# Apply Cloudflare secret (update with your API token)
+# Применить секрет Cloudflare (обновите своим токеном API)
 kubectl apply -f k3s/cluster-config/cert-manager/secret-cloudflare.yaml
 
-# Apply ClusterIssuer
+# Применить ClusterIssuer
 kubectl apply -f k3s/cluster-config/cert-manager/clusterissuer.yaml
 ```
 
-### 3. Rancher UI Installation
+### 3. Установка Rancher UI
 ```bash
-# Create namespace
+# Создать пространство имен
 kubectl create namespace cattle-system
 
-# Apply SSL certificate
+# Применить SSL-сертификат
 kubectl apply -f k3s/cluster-config/rancher/certificate.yaml
 
-# Install Rancher
+# Установить Rancher
 chmod +x k3s/cluster-config/rancher/ui.sh
 ./k3s/cluster-config/rancher/ui.sh
 ```
 
-## DNS Configuration
-Configure the following DNS records in Cloudflare:
+## Настройка DNS
+Настройте следующие DNS-записи в Cloudflare:
 ```
-Type: A
-Name: *.k3s.larek.tech
-Content: <your-external-ip>
-Proxy: DNS only
+Тип: A
+Имя: *.k3s.larek.tech
+Содержимое: <ваш-внешний-ip>
+Прокси: Только DNS
 ```
 
-## Progress Tracking
-### ✅ Completed
-- [x] K3s cluster setup with single master node
-- [x] Helm package manager installation
-- [x] cert-manager installation and configuration
-- [x] Cloudflare DNS-01 challenge integration
-- [x] SSL certificate automation for `*.k3s.larek.tech`
-- [x] Rancher UI deployment with SSL certificates
+## Отладка
 
-### 🚧 In Progress
-- [ ] Worker node integration
-- [ ] Ingress controller configuration
-- [ ] Service mesh setup
+### Распространенные проблемы
+- **Сертификат не выдаётся**: проверьте DNS-запись `dig TXT _acme-challenge.rancher.k3s.larek.tech`
+- **Rancher UI недоступен**: `kubectl get certificate -n cattle-system`
+- **Проблемы с DNS**: убедитесь, что `*.k3s.larek.tech` указывает на ваш внешний IP
 
-### 📋 Planned
-- [ ] Network Infrastructure
-  - [ ] Add each MAC address to DHCP server
-  - [ ] Setup static IP for additional nodes
-  - [ ] Setup Pi-hole for DNS resolution
-  - [ ] Setup WireGuard VPN server
-- [ ] Monitoring and Observability
-  - [ ] Setup Prometheus for metrics collection
-  - [ ] Setup Grafana for visualization
-  - [ ] Setup AlertManager for notifications
-- [ ] GitOps and Automation
-  - [ ] Setup FluxCD for GitOps deployment
-  - [ ] Setup GitHub Actions runners
-  - [ ] Infrastructure as Code with Ansible
-- [ ] Additional Services
-  - [ ] Application deployment pipelines
-  - [ ] Backup and disaster recovery
-  - [ ] Network policies and security hardening
-
-## Troubleshooting
-
-### Common Issues
-1. **Certificate not issuing**: Check DNS propagation with `dig TXT _acme-challenge.rancher.k3s.larek.tech`
-2. **Rancher UI not accessible**: Verify certificate status with `kubectl get certificate -n cattle-system`
-3. **DNS resolution issues**: Ensure `*.k3s.larek.tech` points to your external IP
-
-### Useful Commands
+### Полезные команды
 ```bash
-# Check cluster status
+# Проверить статус кластера
 kubectl get nodes -o wide
 
-# Check cert-manager status
+# Проверить статус cert-manager
 kubectl get clusterissuer
 kubectl get certificate -A
 
-# Check Rancher deployment
+# Проверить развертывание Rancher
 kubectl get pods -n cattle-system
 
-# View cert-manager logs
+# Просмотреть логи cert-manager
 kubectl logs -n cert-manager deployment/cert-manager -f
 ```
