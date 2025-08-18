@@ -34,7 +34,13 @@ resource "kubernetes_manifest" "argocd_certificate" {
     }
   }
 
-  depends_on = [helm_release.argocd]
+  # Relax CRD validation to avoid provider schema mismatches
+  computed_fields = ["spec"]
+
+  depends_on = [
+    helm_release.argocd,
+    helm_release.cert_manager
+  ]
 }
 
 
