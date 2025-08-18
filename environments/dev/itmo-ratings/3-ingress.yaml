@@ -6,8 +6,14 @@ metadata:
   namespace: itmo-ratings
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: itmo-ratings-stripprefix@kubernetescrd
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - dev.k3s.larek.tech
+      secretName: tls-dev-ingress
   rules:
   - host: dev.k3s.larek.tech
     http:
