@@ -18,6 +18,7 @@ spec:
             containers:
                 - name: time-service
                   image: ghcr.io/egortarasov/time:main-1c07b0e
+                  command: ["/usr/local/bin/service"]
                   resources:
                       requests:
                           memory: "512Mi"
