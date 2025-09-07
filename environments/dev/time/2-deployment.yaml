@@ -17,7 +17,7 @@ spec:
                 - name: my-registry-secret
             containers:
                 - name: time-service
-                  image: ghcr.io/egortarasov/time:main-1c07b0e
+                  image: ghcr.io/egortarasov/time:main-1cdfa9c
                   command: ["/usr/local/bin/service"]
                   resources:
                       requests:
