@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: time-service
+    namespace: time
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: time-service
+    template:
+        metadata:
+            labels:
+                app: time-service
+        spec:
+            imagePullSecrets:
+                - name: my-registry-secret
+            containers:
+                - name: time-service
+                  image: ghcr.io/egortarasov/time:main-1c07b0e
+                  resources:
+                      requests:
+                          memory: "512Mi"
+                          cpu: "500m"
+                      limits:
+                          memory: "2048Mi"
+                          cpu: "2000m"
