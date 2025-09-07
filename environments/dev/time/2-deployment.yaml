@@ -19,6 +19,9 @@ spec:
                 - name: time-service
                   image: ghcr.io/egortarasov/time:main-1cdfa9c
                   command: ["/usr/local/bin/service"]
+                  envFrom:
+                      - secretRef:
+                            name: time-secrets
                   resources:
                       requests:
                           memory: "512Mi"
