@@ -1,0 +1,115 @@
+# Rancher Monitoring Values
+# This file contains the configuration for Rancher Monitoring stack
+
+prometheus:
+    prometheusSpec:
+        # Resource configuration
+        resources:
+            requests:
+                memory: "1950Mi"
+                cpu: "2700m"
+            limits:
+                memory: "4Gi"
+                cpu: "4000m"
+
+        # Storage configuration
+        storageSpec:
+            volumeClaimTemplate:
+                spec:
+                    storageClassName: "local-path" # k3s default storage class
+                    resources:
+                        requests:
+                            storage: 50Gi
+
+        # Retention settings
+        retention: "30d"
+        retentionSize: "45GB"
+
+# Grafana configuration
+grafana:
+    enabled: true
+
+    # Admin credentials
+    adminPassword: "admin"
+
+    # Resource configuration
+    resources:
+        requests:
+            memory: "256Mi"
+            cpu: "200m"
+        limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+    # Persistence
+    persistence:
+        enabled: true
+        size: 10Gi
+        storageClassName: "local-path"
+
+    # Ingress configuration
+    ingress:
+        enabled: true
+        hosts:
+            - grafana.k3s.larek.tech
+        tls:
+            - secretName: tls-grafana-ingress
+              hosts:
+                  - grafana.k3s.larek.tech
+
+# Alertmanager configuration
+alertmanager:
+    enabled: true
+
+    # Resource configuration
+    alertmanagerSpec:
+        resources:
+            requests:
+                memory: "256Mi"
+                cpu: "100m"
+            limits:
+                memory: "512Mi"
+                cpu: "200m"
+
+        # Storage configuration
+        storage:
+            volumeClaimTemplate:
+                spec:
+                    storageClassName: "local-path"
+                    resources:
+                        requests:
+                            storage: 10Gi
+
+# Node Exporter configuration
+nodeExporter:
+    enabled: true
+
+    # Service Monitor
+    serviceMonitor:
+        enabled: true
+
+# Kube State Metrics
+kubeStateMetrics:
+    enabled: true
+
+# Enable monitoring for additional components
+kubeApiServer:
+    enabled: true
+
+kubeEtcd:
+    enabled: true
+
+kubeScheduler:
+    enabled: true
+
+kubeControllerManager:
+    enabled: true
+
+coreDns:
+    enabled: true
+
+kubeDns:
+    enabled: false
+# Additional scrape configs can be added here
+# prometheusOperator:
+#   additionalScrapeConfigs: []
